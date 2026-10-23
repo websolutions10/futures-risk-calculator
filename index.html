@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>Futures Risk Calculator — MGC · MNQ · MES</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1120;--panel:#121c2e;--panel2:#18243a;--line:#2a3952;--text:#eef4ff;--muted:#a7b6cc;--accent:#78a9ff;--green:#50d6a0;--red:#ff7c86;--yellow:#ffd479}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(ellipse at top,#172844 0%,var(--bg) 55%);color:var(--text);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{max-width:1050px;margin:0 auto;padding:28px 18px 44px}
+    header{margin-bottom:22px}
+    .eyebrow{color:var(--accent);font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    h1{font-size:clamp(1.8rem,4vw,2.7rem);line-height:1.1;margin:8px 0 10px}
+    .intro{color:var(--muted);max-width:720px;margin:0}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px;align-items:start}
+    .card{background:rgba(18,28,46,.94);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 12px 40px #0002}
+    h2{font-size:1.08rem;margin:0 0 16px}
+    .field{margin-bottom:15px}
+    label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:7px}
+    input,select{width:100%;background:#0b1424;color:var(--text);border:1px solid #344761;border-radius:10px;padding:12px 13px;font:inherit;outline:none}
+    input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #78a9ff22}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .contract-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:17px}
+    .contract{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;font:inherit}
+    .contract strong{display:block;font-size:1.1rem}
+    .contract small{display:block;color:var(--muted);margin-top:3px}
+    .contract.active{border-color:var(--accent);background:#203858;box-shadow:inset 0 0 0 1px var(--accent)}
+    .hint{font-size:.82rem;color:var(--muted);margin-top:6px}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .metric{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:14px;min-width:0}
+    .metric .label{font-size:.78rem;color:var(--muted);margin-bottom:6px}
+    .metric .value{font-size:clamp(1.25rem,3vw,1.75rem);font-weight:800;letter-spacing:-.03em;overflow-wrap:anywhere}
+    .metric .sub{font-size:.78rem;color:var(--muted);margin-top:4px}
+    .good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--yellow)}
+    .status{padding:12px 14px;border-radius:12px;background:#0b1424;border:1px solid var(--line);margin-top:13px;font-size:.9rem}
+    .formula{margin-top:15px;color:var(--muted);font-size:.86rem}
+    .specs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+    .spec{border:1px solid var(--line);border-radius:12px;padding:13px;background:#0e1728}
+    .spec b{display:block}.spec span{color:var(--muted);font-size:.82rem}
+    .warning{margin-top:18px;border-left:3px solid var(--yellow);padding:10px 13px;background:#ffd4790d;color:#d9e2f1;font-size:.86rem}
+    footer{color:var(--muted);font-size:.8rem;margin-top:22px}
+    .buttonrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    button.secondary{background:transparent;color:var(--muted);border:1px solid var(--line);padding:9px 12px;border-radius:9px;cursor:pointer}
+    @media(max-width:760px){.layout{grid-template-columns:1fr}.wrap{padding:20px 12px 32px}.card{padding:16px}.specs{grid-template-columns:1fr}.grid2{gap:9px}}
+    @media(max-width:390px){.metrics{grid-template-columns:1fr 1fr}.metric{padding:11px}.contract{font-size:.88rem}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Outil gratuit · Sans compte · Sans serveur</div>
+      <h1>Futures Risk Calculator</h1>
+      <p class="intro">Calcule le nombre de contrats, le risque au stop et le gain potentiel pour MGC, MNQ et MES. Fonctionne directement dans ton navigateur, y compris sur mobile.</p>
+    </header>
+
+    <div class="layout">
+      <section class="card">
+        <h2>1. Paramètres du trade</h2>
+        <div class="contract-tabs" role="group" aria-label="Choisir le contrat">
+          <button class="contract" data-symbol="MGC" type="button"><strong>MGC</strong><small>Or · 10 $/point</small></button>
+          <button class="contract active" data-symbol="MNQ" type="button"><strong>MNQ</strong><small>Nasdaq · 2 $/point</small></button>
+          <button class="contract" data-symbol="MES" type="button"><strong>MES</strong><small>S&amp;P 500 · 5 $/point</small></button>
+        </div>
+        <div class="field">
+          <label for="direction">Sens du trade</label>
+          <select id="direction"><option value="long">Achat (Long)</option><option value="short">Vente (Short)</option></select>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label for="entry">Prix d'entrée</label>
+            <input id="entry" type="number" step="any" placeholder="Ex. 25000" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="stop">Prix du stop-loss</label>
+            <input id="stop" type="number" step="any" placeholder="Ex. 24980" inputmode="decimal">
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label for="risk">Risque max ($)</label>
+            <input id="risk" type="number" min="0" step="any" value="200" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="rr">Ratio TP / risque</label>
+            <select id="rr"><option value="3" selected>1:3 (TP 600 $ si risque 200 $)</option><option value="2">1:2</option><option value="1.5">1:1,5</option><option value="1">1:1</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fees">Frais estimés aller-retour par contrat ($)</label>
+          <input id="fees" type="number" min="0" step="any" value="0" inputmode="decimal">
+          <div class="hint">Inclue commissions et frais de marché par contrat. Mets 0 si tu veux voir le calcul brut.</div>
+        </div>
+        <div class="buttonrow"><button class="secondary" id="reset" type="button">Réinitialiser</button></div>
+        <div class="warning">Le risque calculé est une estimation : un stop peut être exécuté plus loin que son prix en cas de slippage, de gap ou de marché rapide.</div>
+      </section>
+
+      <section class="card">
+        <h2>2. Résultat du calcul</h2>
+        <div class="metrics">
+          <div class="metric"><div class="label">Contrats maximum</div><div class="value" id="contracts">—</div><div class="sub" id="contractsSub">Entre un prix d'entrée et un stop valide</div></div>
+          <div class="metric"><div class="label">Risque estimé au stop</div><div class="value" id="loss">—</div><div class="sub" id="lossSub">Frais inclus</div></div>
+          <div class="metric"><div class="label">Prix du take-profit</div><div class="value" id="target">—</div><div class="sub" id="targetSub">Basé sur le ratio choisi</div></div>
+          <div class="metric"><div class="label">Gain potentiel net</div><div class="value good" id="profit">—</div><div class="sub" id="profitSub">Après frais estimés, avant impôts</div></div>
+          <div class="metric"><div class="label">Distance du stop</div><div class="value" id="distance">—</div><div class="sub" id="distanceSub">Points et ticks</div></div>
+          <div class="metric"><div class="label">Valeur du mouvement</div><div class="value" id="perContract">—</div><div class="sub" id="perContractSub">Par contrat jusqu'au stop</div></div>
+        </div>
+        <div class="status" id="status" aria-live="polite">Renseigne l'entrée et le stop pour calculer la taille de position.</div>
+        <div class="formula" id="formula">Formule : risque disponible ÷ (distance du stop en points × valeur du point + frais par contrat).</div>
+        <div class="specs">
+          <div class="spec"><b>MGCZ6 · Micro Gold</b><span>10 $/point · tick 0,10 = 1 $</span></div>
+          <div class="spec"><b>MNQZ6 · Micro Nasdaq</b><span>2 $/point · tick 0,25 = 0,50 $</span></div>
+          <div class="spec"><b>MESZ6 · Micro S&amp;P 500</b><span>5 $/point · tick 0,25 = 1,25 $</span></div>
+        </div>
+      </section>
+    </div>
+    <footer>
+      Valeurs théoriques des contrats Micro CME : vérifie les spécifications, le symbole et l'échéance chez ton broker avant de trader. Le calculateur ne passe aucun ordre et ne constitue pas un conseil financier.
+    </footer>
+  </main>
+<script>
+(() => {
+  const specs = {
+    MGC: {name:'MGCZ6 · Micro Gold', point:10, tick:0.1, tickValue:1, decimals:2},
+    MNQ: {name:'MNQZ6 · Micro Nasdaq', point:2, tick:0.25, tickValue:0.5, decimals:2},
+    MES: {name:'MESZ6 · Micro S&P 500', point:5, tick:0.25, tickValue:1.25, decimals:2}
+  };
+  let symbol = 'MNQ';
+  const $ = id => document.getElementById(id);
+  const money = n => Number.isFinite(n) ? n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}) : '—';
+  const num = (n, max=4) => Number.isFinite(n) ? n.toLocaleString('fr-FR',{maximumFractionDigits:max}) : '—';
+  const price = n => Number.isFinite(n) ? n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:4}) : '—';
+  function setText(id, value){ $(id).textContent = value; }
+  function clearResults(message) {
+    ['contracts','loss','target','profit','distance','perContract'].forEach(id=>setText(id,'—'));
+    setText('status',message);
+    $('status').className='status';
+  }
+  function calculate() {
+    const s=specs[symbol];
+    const entryRaw=$('entry').value.trim(), stopRaw=$('stop').value.trim();
+    const entry=Number(entryRaw), stop=Number(stopRaw), risk=Number($('risk').value), rr=Number($('rr').value), fees=Number($('fees').value);
+    if(entryRaw==='' || stopRaw==='') { clearResults('Renseigne le prix d’entrée et le stop-loss pour obtenir les résultats.'); return; }
+    if(!Number.isFinite(entry)||!Number.isFinite(stop)||entry<=0||stop<=0||!Number.isFinite(risk)||risk<=0||!Number.isFinite(rr)||rr<=0||!Number.isFinite(fees)||fees<0) {
+      clearResults('Vérifie les valeurs : prix positifs, risque supérieur à 0 et frais non négatifs.'); return;
+    }
+    const direction=$('direction').value;
+    const validStop=direction==='long' ? stop<entry : stop>entry;
+    if(!validStop) { clearResults(direction==='long'?'Pour un achat (Long), le stop doit être sous l’entrée.':'Pour une vente (Short), le stop doit être au-dessus de l’entrée.'); return; }
+    const dist=Math.abs(entry-stop);
+    const ticks=dist/s.tick;
+    const riskPerContract=dist*s.point+fees;
+    const contracts=Math.max(0,Math.floor((risk+1e-9)/riskPerContract));
+    const actualLoss=contracts*riskPerContract;
+    const targetDist=dist*rr;
+    const target=direction==='long'?entry+targetDist:entry-targetDist;
+    const grossProfit=contracts*(targetDist*s.point);
+    const netProfit=grossProfit-contracts*fees;
+    const perContractLoss=dist*s.point;
+    setText('contracts',String(contracts));
+    setText('contractsSub',contracts===0?'Un contrat dépasserait le budget de risque':'Taille calculée sans dépasser le budget saisi');
+    setText('loss',money(actualLoss));
+    setText('lossSub',`Brut ${money(contracts*perContractLoss)} + frais ${money(contracts*fees)}`);
+    setText('target',price(target));
+    setText('targetSub',`${num(targetDist)} points depuis l’entrée · ratio 1:${num(rr,2)}`);
+    setText('profit',money(netProfit));
+    setText('profitSub',`Gain brut ${money(grossProfit)} moins frais estimés`);
+    setText('distance',`${num(dist)} pts`);
+    setText('distanceSub',`Environ ${num(ticks,2)} ticks · tick ${num(s.tick)}`);
+    setText('perContract',money(perContractLoss));
+    setText('perContractSub',`${money(s.point)} par point × ${num(dist)} points, hors frais`);
+    let msg;
+    if(contracts===0) msg=`Aucun contrat ne respecte ce budget. Le risque estimé d’un seul contrat est ${money(riskPerContract)}.`;
+    else if(actualLoss > risk+0.001) msg='Attention : le risque estimé dépasse le budget. Vérifie les paramètres.';
+    else msg=`${contracts} contrat${contracts>1?'s':''} : risque estimé ${money(actualLoss)} sur ${money(risk)} disponibles.`;
+    setText('status',msg);
+    $('status').className='status '+(contracts===0?'warn':'good');
+    setText('formula',`Calcul : ${money(risk)} ÷ (${num(dist)} points × ${money(s.point)}/point + ${money(fees)} de frais par contrat). Les contrats sont arrondis à l’entier inférieur.`);
+  }
+  document.querySelectorAll('.contract').forEach(btn=>btn.addEventListener('click',()=>{
+    symbol=btn.dataset.symbol;
+    document.querySelectorAll('.contract').forEach(b=>b.classList.toggle('active',b===btn));
+    calculate();
+  }));
+  ['direction','entry','stop','risk','rr','fees'].forEach(id=>$(id).addEventListener('input',calculate));
+  $('reset').addEventListener('click',()=>{
+    $('direction').value='long'; $('entry').value=''; $('stop').value=''; $('risk').value='200'; $('rr').value='3'; $('fees').value='0'; calculate();
+  });
+  calculate();
+})();
+</script>
+</body>
+</html>
